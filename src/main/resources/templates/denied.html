@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Not permitted')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('home')}"></div>
+<main class="sheet">
+    <p class="eyebrow">Access</p>
+    <h1>You cannot open that page</h1>
+    <p class="standfirst">Your account does not carry the role this screen requires.
+       If you need it, ask the system administrator to add it.</p>
+    <a class="btn" th:href="@{/dashboard}">Back to the dashboard</a>
+</main>
+</body>
+</html>

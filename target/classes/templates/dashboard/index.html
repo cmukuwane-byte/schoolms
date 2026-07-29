@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Dashboard')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('home')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+
+    <p class="eyebrow" th:text="${#temporals.format(today, 'EEEE d MMMM yyyy')}">Today</p>
+    <h1>School at a glance</h1>
+    <p class="standfirst">
+        <span th:if="${currentTerm}" th:text="${currentTerm.name} + ', ' + ${currentYear?.year}">Term</span>
+        <span th:unless="${currentTerm}" class="tag bad">No term is set as current — do this under Setup</span>
+    </p>
+
+    <div class="grid four">
+        <div class="tally">
+            <div class="figure" th:text="${primaryCount}">0</div>
+            <div class="label">Primary learners</div>
+        </div>
+        <div class="tally">
+            <div class="figure" th:text="${secondaryCount}">0</div>
+            <div class="label">Secondary learners</div>
+        </div>
+        <div class="tally">
+            <div class="figure" th:text="${boarderCount}">0</div>
+            <div class="label">Boarders</div>
+        </div>
+        <div class="tally">
+            <div class="figure" th:text="${staffCount}">0</div>
+            <div class="label">Staff on strength</div>
+        </div>
+    </div>
+
+    <h2>Today's registers</h2>
+    <div class="grid four">
+        <div class="tally">
+            <div class="figure" th:text="${attendanceToday['PRESENT'] ?: 0}">0</div>
+            <div class="label">Present</div>
+        </div>
+        <div class="tally flag">
+            <div class="figure" th:text="${attendanceToday['ABSENT'] ?: 0}">0</div>
+            <div class="label">Absent</div>
+        </div>
+        <div class="tally">
+            <div class="figure" th:text="${attendanceToday['LATE'] ?: 0}">0</div>
+            <div class="label">Late</div>
+        </div>
+        <div class="tally">
+            <div class="figure" th:text="${staffOnPremises}">0</div>
+            <div class="label">Staff not signed out</div>
+        </div>
+    </div>
+
+    <h2>Library</h2>
+    <div class="grid four">
+        <div class="tally">
+            <div class="figure" th:text="${booksOnLoan}">0</div>
+            <div class="label">Copies on loan</div>
+        </div>
+        <div class="tally" th:classappend="${overdueBooks > 0} ? 'flag'">
+            <div class="figure" th:text="${overdueBooks}">0</div>
+            <div class="label">Overdue</div>
+        </div>
+    </div>
+
+    <h2>Go to</h2>
+    <div class="grid two">
+        <div class="panel">
+            <h3>Daily work</h3>
+            <p><a th:href="@{/attendance}">Take a class register</a></p>
+            <p><a th:href="@{/attendance/staff}">Staff sign-in book</a></p>
+            <p><a th:href="@{/assessments}">Enter test marks</a></p>
+            <p><a th:href="@{/library/circulation}">Issue or take back a book</a></p>
+        </div>
+        <div class="panel">
+            <h3>Records</h3>
+            <p><a th:href="@{/students/new}">Enrol a new learner</a></p>
+            <p><a th:href="@{/reports}">Generate report cards</a></p>
+            <p><a th:href="@{/attendance/follow-up}">Absence follow-up list</a></p>
+            <p><a th:href="@{/academics/years}">Terms, periods and grading</a></p>
+        </div>
+    </div>
+</main>
+</body>
+</html>

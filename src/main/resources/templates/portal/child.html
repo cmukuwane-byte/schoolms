@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('My child')}"></head>
+<body>
+<header class="masthead">
+    <span class="crest">School Management System</span>
+    <span class="spacer"></span>
+    <a th:href="@{/portal}">My children</a>
+    <form th:action="@{/logout}" method="post"><button class="btn small quiet" type="submit">Sign out</button></form>
+</header>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow" th:text="${student.studentNumber}"></p>
+    <h1 th:text="${student.fullName}">Child</h1>
+    <p class="standfirst"
+       th:text="${student.currentClass != null} ? ${student.currentClass.name} : 'No class'"></p>
+
+    <h2>Reports</h2>
+    <table class="register" th:if="${!#lists.isEmpty(reports)}">
+        <thead><tr><th>Term</th><th class="num">Average %</th><th class="num">Position</th><th></th></tr></thead>
+        <tbody>
+        <tr th:each="r : ${reports}">
+            <td th:text="${r.term.name} + ' ' + ${r.term.academicYear.year}"></td>
+            <td class="num" th:text="${r.averagePercent} ?: '—'"></td>
+            <td class="num" th:text="${r.positionInClass} != null ?
+                 ${r.positionInClass} + ' of ' + ${r.classSize} : '—'"></td>
+            <td><a class="btn small" th:href="@{/portal/report/{id}(id=${r.id})}">Open</a></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(reports)}">No reports have been released yet.</div>
+
+    <h2>Attendance, last month</h2>
+    <table class="register" th:if="${!#lists.isEmpty(attendance)}">
+        <thead><tr><th>Date</th><th>Session</th><th>Status</th><th>Remarks</th></tr></thead>
+        <tbody>
+        <tr th:each="a : ${attendance}">
+            <td class="code" th:text="${a.attendanceDate}"></td>
+            <td th:text="${a.sessionName}"></td>
+            <td><span class="tag" th:classappend="${a.status.name()=='PRESENT'} ? 'ok' : 'bad'"
+                      th:text="${a.status}"></span></td>
+            <td th:text="${a.remarks} ?: ''"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(attendance)}">No attendance recorded.</div>
+
+    <h2>Library</h2>
+    <table class="register" th:if="${!#lists.isEmpty(loans)}">
+        <thead><tr><th>Title</th><th>Due</th><th>Status</th></tr></thead>
+        <tbody>
+        <tr th:each="l : ${loans}">
+            <td th:text="${l.bookCopy.book.title}"></td>
+            <td class="code" th:text="${l.dueDate}"></td>
+            <td><span class="tag" th:classappend="${l.overdue} ? 'bad' : 'neutral'"
+                      th:text="${l.status}"></span></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(loans)}">Nothing borrowed.</div>
+</main>
+</body>
+</html>

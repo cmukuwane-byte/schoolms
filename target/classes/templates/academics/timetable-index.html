@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Timetable')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('timetable')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow" th:text="${term != null} ? ${term.name} + ' ' + ${term.academicYear.year} : 'No term set'"></p>
+    <h1>Timetable</h1>
+    <p class="standfirst">Open a class grid to place lessons, or a teacher grid to check their week.</p>
+
+    <div class="grid two">
+        <div class="panel">
+            <h3>By class</h3>
+            <ul style="columns:2 10rem;list-style:none;padding:0">
+                <li th:each="c : ${classes}" style="margin-bottom:.25rem">
+                    <a th:href="@{/timetable/class/{id}(id=${c.id})}" th:text="${c.name}"></a>
+                </li>
+            </ul>
+        </div>
+        <div class="panel">
+            <h3>By teacher</h3>
+            <ul style="columns:2 12rem;list-style:none;padding:0">
+                <li th:each="t : ${teachers}" style="margin-bottom:.25rem">
+                    <a th:href="@{/timetable/teacher/{id}(id=${t.id})}" th:text="${t.fullName}"></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{layout/base :: head('Scheme of work')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('curriculum')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow">Academics</p>
+    <h1>Scheme of work</h1>
+    <p class="standfirst">What each grade covers, subject by subject, week by week. Teachers draw
+       their lesson plans from this, which is what keeps parallel streams in step.</p>
+
+    <form class="inline" method="get" th:action="@{/curriculum}" style="margin-bottom:1rem">
+        <div class="field"><label>Subject</label>
+            <select name="subjectId" required>
+                <option value="">Choose…</option>
+                <option th:each="s : ${subjects}" th:value="${s.id}"
+                        th:text="${s.name} + ' (' + ${s.phase} + ')'"
+                        th:selected="${s.id == subjectId}"></option>
+            </select></div>
+        <div class="field"><label>Grade or form</label>
+            <input type="number" name="gradeLevel" min="0" max="7" style="width:6rem"
+                   th:value="${gradeLevel}" required></div>
+        <button class="btn" type="submit">Open</button>
+        <a sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_HEAD')" class="btn quiet"
+           th:if="${subjectId != null}"
+           th:href="@{/curriculum/new(subjectId=${subjectId},gradeLevel=${gradeLevel})}">Add a week</a>
+    </form>
+
+    <div th:if="${byTerm == null}" class="notice">
+        Choose a subject and a grade to see or build its scheme.</div>
+
+    <div th:if="${byTerm != null}">
+        <h2 th:text="${subject.name} + ' · Grade/Form ' + ${gradeLevel}"></h2>
+
+        <div th:each="entry : ${byTerm}">
+            <h3 th:text="'Term ' + ${entry.key}"></h3>
+            <table class="register" th:if="${!#lists.isEmpty(entry.value)}">
+                <thead><tr><th class="num">Wk</th><th>Topic</th><th>Sub-topic</th>
+                    <th>Objectives</th><th class="num">Periods</th><th>Syllabus ref.</th>
+                    <th sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_HEAD')"></th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${entry.value}">
+                    <td class="num" th:text="${c.weekNumber}"></td>
+                    <td th:text="${c.topic}"></td>
+                    <td th:text="${c.subTopic} ?: '—'"></td>
+                    <td th:text="${c.objectives} ?: '—'"></td>
+                    <td class="num" th:text="${c.suggestedPeriods} ?: '—'"></td>
+                    <td class="code" th:text="${c.syllabusReference} ?: '—'"></td>
+                    <td sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_HEAD')">
+                        <a class="btn small quiet" th:href="@{/curriculum/{id}/edit(id=${c.id})}">Edit</a>
+                        <form method="post" style="display:inline"
+                              th:action="@{/curriculum/{id}/retire(id=${c.id})}">
+                            <input type="hidden" name="subjectId" th:value="${subjectId}">
+                            <input type="hidden" name="gradeLevel" th:value="${gradeLevel}">
+                            <button class="btn small quiet" type="submit">Remove</button></form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="empty" th:if="${#lists.isEmpty(entry.value)}">
+                Nothing scheduled for term <span th:text="${entry.key}">1</span>.
+                <a sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_HEAD')"
+                   th:href="@{/curriculum/new(subjectId=${subjectId},gradeLevel=${gradeLevel},termNumber=${entry.key})}">
+                    Add the first week</a>
+            </div>
+        </div>
+
+        <div class="panel" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_HEAD')"
+             style="margin-top:1.5rem">
+            <h3>Copy this scheme to another grade</h3>
+            <p style="font-size:.85rem;margin:.25rem 0 .5rem">
+                Useful when a subject follows the same shape across grades. The copy is yours to edit.</p>
+            <form class="inline" method="post" th:action="@{/curriculum/copy}">
+                <input type="hidden" name="subjectId" th:value="${subjectId}">
+                <input type="hidden" name="fromGrade" th:value="${gradeLevel}">
+                <div class="field"><label>Copy into grade</label>
+                    <input type="number" name="toGrade" min="0" max="7" style="width:6rem" required></div>
+                <button class="btn quiet" type="submit">Copy</button>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

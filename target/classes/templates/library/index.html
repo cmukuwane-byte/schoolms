@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Library')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('library')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow">Library</p>
+    <h1>Library</h1>
+    <p class="standfirst">Catalogue, accessions and circulation.</p>
+
+    <div class="grid four">
+        <div class="tally"><div class="figure" th:text="${titleCount}">0</div>
+            <div class="label">Titles</div></div>
+        <div class="tally"><div class="figure" th:text="${copyCount}">0</div>
+            <div class="label">Copies</div></div>
+        <div class="tally"><div class="figure" th:text="${onLoan}">0</div>
+            <div class="label">On loan</div></div>
+        <div class="tally" th:classappend="${!#lists.isEmpty(overdue)} ? 'flag'">
+            <div class="figure" th:text="${#lists.size(overdue)}">0</div>
+            <div class="label">Overdue</div></div>
+    </div>
+
+    <p style="margin-top:1rem">
+        <a class="btn" th:href="@{/library/circulation}">Issue or take back</a>
+        <a class="btn quiet" th:href="@{/library/catalogue}">Catalogue</a>
+        <a class="btn quiet" th:href="@{/library/catalogue/new}">Add a title</a>
+    </p>
+
+    <h2>Overdue</h2>
+    <table class="register" th:if="${!#lists.isEmpty(overdue)}">
+        <thead><tr><th>Accession</th><th>Title</th><th>Borrower</th><th>Due</th></tr></thead>
+        <tbody>
+        <tr th:each="l : ${overdue}">
+            <td class="code" th:text="${l.bookCopy.accessionNumber}"></td>
+            <td th:text="${l.bookCopy.book.title}"></td>
+            <td th:text="${l.borrowerName}"></td>
+            <td class="code" th:text="${l.dueDate}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(overdue)}">Nothing overdue.</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Class')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('academics')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow">Classes</p>
+    <h1 th:text="${schoolClass.id == null} ? 'New class' : 'Edit class'">New class</h1>
+    <p class="standfirst">Grade level drives promotion: Grade 5 promotes into grade level 6,
+       Form 3 into Form 4.</p>
+
+    <form th:action="@{/academics/classes}" th:object="${schoolClass}" method="post" style="max-width:34rem">
+        <input type="hidden" th:field="*{id}">
+        <div class="field"><label>Name</label>
+            <input type="text" th:field="*{name}" required placeholder="Grade 5 Blue"></div>
+        <div class="field"><label>Phase</label>
+            <select th:field="*{phase}" required>
+                <option th:each="p : ${phases}" th:value="${p}" th:text="${p}"></option>
+            </select></div>
+        <div class="field"><label>Grade level</label>
+            <input type="number" th:field="*{gradeLevel}" required></div>
+        <div class="field"><label>Stream</label>
+            <input type="text" th:field="*{stream}" placeholder="Blue, Alpha, Science"></div>
+        <div class="field"><label>Class teacher</label>
+            <select th:field="*{classTeacher}">
+                <option value="">—</option>
+                <option th:each="t : ${teachers}" th:value="${t.id}" th:text="${t.fullName}"></option>
+            </select></div>
+        <div class="field"><label>Home room</label>
+            <select th:field="*{homeClassroom}">
+                <option value="">—</option>
+                <option th:each="r : ${classrooms}" th:value="${r.id}" th:text="${r.code} + ' ' + ${r.name}"></option>
+            </select></div>
+        <div class="field"><label>Academic year</label>
+            <select th:field="*{academicYear}">
+                <option th:each="y : ${years}" th:value="${y.id}" th:text="${y.year}"></option>
+            </select></div>
+        <div class="field"><label>Maximum roll</label>
+            <input type="number" th:field="*{maxCapacity}"></div>
+        <button class="btn" type="submit">Save</button>
+        <a class="btn quiet" th:href="@{/academics/classes}">Cancel</a>
+    </form>
+</main>
+</body>
+</html>

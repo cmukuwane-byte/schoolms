@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Title')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('library')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow" th:text="${book.classification} ?: 'Uncatalogued'"></p>
+    <h1 th:text="${book.title}">Title</h1>
+    <p class="standfirst">
+        <span th:text="${book.author} ?: 'Unknown author'"></span> ·
+        <span th:text="${#lists.size(book.copies)}">0</span> copies,
+        <span th:text="${book.availableCount}">0</span> on the shelf
+    </p>
+
+    <div class="panel">
+        <h3>Accession more copies</h3>
+        <form class="inline" method="post" th:action="@{/library/catalogue/{id}/copies(id=${book.id})}">
+            <div class="field"><label>How many</label>
+                <input type="number" name="howMany" value="1" min="1" max="100" style="width:6rem" required></div>
+            <div class="field"><label>Accession prefix</label>
+                <input type="text" name="prefix" value="LIB" style="width:8rem" required></div>
+            <div class="field"><label>Shelf</label><input type="text" name="shelf" style="width:8rem"></div>
+            <div class="field"><label>Replacement cost</label>
+                <input type="number" step="0.01" name="cost" style="width:8rem"></div>
+            <button class="btn" type="submit">Add copies</button>
+        </form>
+    </div>
+
+    <h2>Copies</h2>
+    <table class="register" th:if="${!#lists.isEmpty(copies)}">
+        <thead><tr><th>Accession</th><th>Status</th><th>Condition</th><th>Shelf</th>
+            <th>Acquired</th><th class="num">Replacement</th></tr></thead>
+        <tbody>
+        <tr th:each="c : ${copies}">
+            <td class="code" th:text="${c.accessionNumber}"></td>
+            <td><span class="tag" th:classappend="${c.status.name()=='AVAILABLE'} ? 'ok' :
+                      (${c.status.name()=='ON_LOAN'} ? 'neutral' : 'bad')" th:text="${c.status}"></span></td>
+            <td th:text="${c.condition}"></td>
+            <td class="code" th:text="${c.shelfLocation} ?: '—'"></td>
+            <td class="code" th:text="${c.dateAcquired} ?: '—'"></td>
+            <td class="num" th:text="${c.replacementCost} ?: '—'"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(copies)}">
+        No copies yet, so this title cannot be borrowed.</div>
+</main>
+</body>
+</html>

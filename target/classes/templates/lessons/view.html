@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Lesson plan')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('lessons')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow"
+       th:text="${plan.schoolClass.name} + ' · ' + ${plan.subject.name} + ' · Week ' + ${plan.weekNumber}"></p>
+    <h1 th:text="${plan.topic}">Topic</h1>
+    <p class="standfirst">
+        <span th:text="${plan.teacher.fullName}"></span> ·
+        week beginning <span th:text="${plan.weekStarting}"></span> ·
+        <span class="tag"
+              th:classappend="${plan.status.name()=='APPROVED'} ? 'ok' :
+                  (${plan.status.name()=='RETURNED'} ? 'bad' :
+                  (${plan.status.name()=='SUBMITTED'} ? 'neutral' : 'warn'))"
+              th:text="${plan.status}"></span>
+    </p>
+
+    <div class="notice" th:if="${plan.reviewComment != null}">
+        <strong>Head's note</strong> — <span th:text="${plan.reviewComment}"></span>
+        <span th:if="${plan.reviewedBy != null}"
+              th:text="' (' + ${plan.reviewedBy.fullName} + ', '
+                       + ${#temporals.format(plan.reviewedAt, 'dd MMM yyyy')} + ')'"></span>
+    </div>
+
+    <table class="register">
+        <tbody>
+        <tr><th style="width:14rem">Objectives</th><td th:text="${plan.objectives} ?: '—'"></td></tr>
+        <tr><th>Periods planned</th><td th:text="${plan.periodsPlanned} ?: '—'"></td></tr>
+        <tr><th>What the teacher does</th><td th:text="${plan.teacherActivities} ?: '—'"></td></tr>
+        <tr><th>What the learners do</th><td th:text="${plan.learnerActivities} ?: '—'"></td></tr>
+        <tr><th>Media and resources</th><td th:text="${plan.mediaAndResources} ?: '—'"></td></tr>
+        <tr><th>Checking understanding</th><td th:text="${plan.assessmentMethod} ?: '—'"></td></tr>
+        <tr><th>Homework</th><td th:text="${plan.homework} ?: '—'"></td></tr>
+        <tr><th>Reflection</th><td th:text="${plan.reflection} ?: '—'"></td></tr>
+        <tr th:if="${plan.curriculumTopic != null}">
+            <th>Scheme of work</th>
+            <td th:text="'Term ' + ${plan.curriculumTopic.termNumber}
+                         + ', week ' + ${plan.curriculumTopic.weekNumber}
+                         + ' — ' + ${plan.curriculumTopic.topic}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p style="margin-top:1rem" th:if="${isOwner and plan.editableByTeacher}">
+        <a class="btn" th:href="@{/lessons/{id}/edit(id=${plan.id})}">Edit</a>
+        <form method="post" style="display:inline" th:action="@{/lessons/{id}/submit(id=${plan.id})}">
+            <button class="btn" type="submit">Submit for review</button></form>
+    </p>
+
+    <div class="panel" th:if="${isReviewer and plan.awaitingReview}" style="margin-top:1rem">
+        <h3>Review</h3>
+        <form method="post" th:action="@{/lessons/{id}/approve(id=${plan.id})}" style="margin-bottom:.75rem">
+            <div class="field"><label>Comment (optional)</label>
+                <input type="text" name="comment" placeholder="Well planned"></div>
+            <button class="btn" type="submit">Approve</button>
+        </form>
+        <form method="post" th:action="@{/lessons/{id}/return(id=${plan.id})}">
+            <div class="field"><label>What needs changing</label>
+                <input type="text" name="comment" required></div>
+            <button class="btn quiet" type="submit">Send back</button>
+        </form>
+    </div>
+
+    <div class="panel" th:if="${isReviewer and plan.status.name() == 'APPROVED'}" style="margin-top:1rem">
+        <h3>Reopen</h3>
+        <p style="font-size:.85rem;margin:.25rem 0 .5rem">
+            An approved plan is locked. Reopening is recorded against your name.</p>
+        <form class="inline" method="post" th:action="@{/lessons/{id}/reopen(id=${plan.id})}">
+            <div class="field" style="min-width:18rem"><label>Reason</label>
+                <input type="text" name="reason" required></div>
+            <button class="btn quiet" type="submit">Reopen</button>
+        </form>
+    </div>
+
+    <p style="margin-top:1rem"><a class="btn quiet" th:href="@{/lessons}">Back</a></p>
+</main>
+</body>
+</html>

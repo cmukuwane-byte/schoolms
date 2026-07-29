@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Report cards')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('reports')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow" th:text="${term != null} ? ${term.name} + ' ' + ${term.academicYear.year} : 'No term set'"></p>
+    <h1>Report cards</h1>
+    <p class="standfirst">Generating pulls every published sitting for the term, averages by
+       subject, and ranks the class.</p>
+
+    <form class="inline" method="get" th:action="@{/reports}" style="margin-bottom:1rem">
+        <div class="field"><label>Class</label>
+            <select name="classId" required>
+                <option value="">Choose a class</option>
+                <option th:each="c : ${classes}" th:value="${c.id}" th:text="${c.name}"
+                        th:selected="${c.id == classId}"></option>
+            </select></div>
+        <button class="btn quiet" type="submit">Show</button>
+    </form>
+
+    <div class="inline" th:if="${classId != null}" style="margin-bottom:1rem">
+        <form method="post" th:action="@{/reports/generate}">
+            <input type="hidden" name="classId" th:value="${classId}">
+            <button class="btn" type="submit">Generate for this class</button>
+        </form>
+        <form method="post" th:action="@{/reports/release-class}">
+            <input type="hidden" name="classId" th:value="${classId}">
+            <button class="btn quiet" type="submit">Release all commented reports</button>
+        </form>
+    </div>
+
+    <table class="register" th:if="${!#lists.isEmpty(cards)}">
+        <thead><tr><th class="num">Pos.</th><th>Name</th><th class="num">Average %</th>
+            <th class="num">Subjects</th><th class="num">Absent</th><th>Comment</th>
+            <th>Status</th><th></th></tr></thead>
+        <tbody>
+        <tr th:each="c : ${cards}">
+            <td class="num" th:text="${c.positionInClass} ?: '—'"></td>
+            <td th:text="${c.student.fullNameFormal}"></td>
+            <td class="num" th:text="${c.averagePercent} ?: '—'"></td>
+            <td class="num" th:text="${#lists.size(c.lines)}"></td>
+            <td class="num" th:text="${c.daysAbsent} ?: 0"></td>
+            <td><span th:if="${c.classTeacherComment == null or #strings.isEmpty(c.classTeacherComment)}"
+                      class="tag warn">Needed</span>
+                <span th:unless="${c.classTeacherComment == null or #strings.isEmpty(c.classTeacherComment)}"
+                      class="tag ok">Written</span></td>
+            <td><span class="tag" th:classappend="${c.released} ? 'ok' : 'neutral'"
+                      th:text="${c.released} ? 'Released' : 'Draft'"></span></td>
+            <td><a class="btn small quiet" th:href="@{/reports/{id}(id=${c.id})}">Open</a></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(cards)}">
+        No report cards for this class yet. Choose a class and generate.</div>
+</main>
+</body>
+</html>

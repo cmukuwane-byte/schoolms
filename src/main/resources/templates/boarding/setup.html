@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Hostels and dormitories')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('boarding')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow">Boarding</p>
+    <h1>Hostels and dormitories</h1>
+    <p class="standfirst">Create the hostel first, then the dormitories inside it. A learner can
+       only be allocated a bed in a hostel matching their sex.</p>
+
+    <div class="panel">
+        <h3>Add a hostel</h3>
+        <form class="inline" method="post" th:action="@{/boarding/hostels}" th:object="${hostel}">
+            <div class="field"><label>Name</label>
+                <input type="text" th:field="*{name}" required placeholder="Nyanga House"></div>
+            <div class="field"><label>For</label>
+                <select th:field="*{gender}">
+                    <option th:each="g : ${genders}" th:value="${g}" th:text="${g}"></option>
+                </select></div>
+            <div class="field"><label>Phase</label>
+                <select th:field="*{phase}">
+                    <option value="">Both</option>
+                    <option th:each="p : ${phases}" th:value="${p}" th:text="${p}"></option>
+                </select></div>
+            <div class="field"><label>Housemaster</label>
+                <select th:field="*{housemaster}">
+                    <option value="">Not assigned</option>
+                    <option th:each="s : ${staffList}" th:value="${s.id}" th:text="${s.fullName}"></option>
+                </select></div>
+            <div class="field"><label>Matron</label>
+                <select th:field="*{matron}">
+                    <option value="">Not assigned</option>
+                    <option th:each="s : ${staffList}" th:value="${s.id}" th:text="${s.fullName}"></option>
+                </select></div>
+            <button class="btn" type="submit">Save hostel</button>
+        </form>
+    </div>
+
+    <table class="register" th:if="${!#lists.isEmpty(hostels)}">
+        <thead><tr><th>Hostel</th><th>For</th><th>Phase</th><th>In charge</th><th>Status</th></tr></thead>
+        <tbody>
+        <tr th:each="h : ${hostels}">
+            <td th:text="${h.name}"></td>
+            <td th:text="${h.gender}"></td>
+            <td th:text="${h.phase} ?: 'Both'"></td>
+            <td th:text="${h.housemaster != null} ? ${h.housemaster.fullName} : '—'"></td>
+            <td th:text="${h.matron != null} ? ${h.matron.fullName} : '—'"></td>
+            <td><span class="tag" th:classappend="${h.active} ? 'ok' : 'bad'"
+                      th:text="${h.active} ? 'Open' : 'Closed'"></span></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(hostels)}">
+        No hostels yet. Add one above before creating dormitories.</div>
+
+    <h2>Dormitories</h2>
+
+    <div class="panel" th:if="${!#lists.isEmpty(hostels)}">
+        <h3>Add a dormitory</h3>
+        <form class="inline" method="post" th:action="@{/boarding/dormitories}" th:object="${dormitory}">
+            <div class="field"><label>Hostel</label>
+                <select th:field="*{hostel}" required>
+                    <option value="">Choose…</option>
+                    <option th:each="h : ${hostels}" th:value="${h.id}"
+                            th:text="${h.name} + ' (' + ${h.gender} + ')'"></option>
+                </select></div>
+            <div class="field"><label>Name</label>
+                <input type="text" th:field="*{name}" required placeholder="Dorm A"></div>
+            <div class="field"><label>Beds</label>
+                <input type="number" th:field="*{bedCapacity}" min="1" max="200"
+                       style="width:6rem" required></div>
+            <button class="btn" type="submit">Save dormitory</button>
+        </form>
+    </div>
+
+    <table class="register" th:if="${!#lists.isEmpty(dormitories)}">
+        <thead><tr><th>Hostel</th><th>Dormitory</th><th class="num">Beds</th>
+            <th>Status</th><th></th></tr></thead>
+        <tbody>
+        <tr th:each="d : ${dormitories}">
+            <td th:text="${d.hostel.name}"></td>
+            <td th:text="${d.name}"></td>
+            <td class="num" th:text="${d.bedCapacity}"></td>
+            <td><span class="tag" th:classappend="${d.active} ? 'ok' : 'bad'"
+                      th:text="${d.active} ? 'In use' : 'Retired'"></span></td>
+            <td>
+                <a class="btn small quiet" th:href="@{/boarding/dormitory/{id}(id=${d.id})}">Open</a>
+                <form th:if="${d.active}" method="post" style="display:inline"
+                      th:action="@{/boarding/dormitories/{id}/retire(id=${d.id})}">
+                    <button class="btn small quiet" type="submit">Retire</button></form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(dormitories)}">No dormitories yet.</div>
+</main>
+</body>
+</html>

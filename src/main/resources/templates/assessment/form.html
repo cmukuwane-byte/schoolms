@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('New sitting')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('assessment')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow">Tests and exams</p>
+    <h1>New sitting</h1>
+    <p class="standfirst">Weight is the share of the term mark this sitting carries. Three tests at
+       20% and an end-of-term paper at 40% comes to 100.</p>
+
+    <form th:action="@{/assessments}" th:object="${assessment}" method="post" style="max-width:34rem">
+        <div class="field"><label>Title</label>
+            <input type="text" th:field="*{title}" required placeholder="Term 2 Mathematics Test 1"></div>
+        <div class="field"><label>Type</label>
+            <select th:field="*{type}" required>
+                <option th:each="t : ${types}" th:value="${t}" th:text="${t}"></option>
+            </select></div>
+        <div class="field"><label>Class</label>
+            <select th:field="*{schoolClass}" required>
+                <option th:each="c : ${classes}" th:value="${c.id}" th:text="${c.name}"></option>
+            </select></div>
+        <div class="field"><label>Subject</label>
+            <select th:field="*{subject}" required>
+                <option th:each="a : ${allocations}" th:value="${a.subject.id}" th:text="${a.subject.name}"></option>
+            </select></div>
+        <div class="field"><label>Date</label><input type="date" th:field="*{assessmentDate}" required></div>
+        <div class="grid two">
+            <div class="field"><label>Paper total</label>
+                <input type="number" step="0.5" th:field="*{maxMark}" required></div>
+            <div class="field"><label>Weight %</label>
+                <input type="number" step="1" th:field="*{weightPercent}" required></div>
+        </div>
+        <button class="btn" type="submit">Create and enter marks</button>
+        <a class="btn quiet" th:href="@{/assessments}">Cancel</a>
+    </form>
+</main>
+</body>
+</html>

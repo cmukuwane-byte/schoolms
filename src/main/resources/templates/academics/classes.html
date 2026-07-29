@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Classes')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('academics')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow" th:text="${year != null} ? 'Academic year ' + ${year.year} : 'No current year set'"></p>
+    <h1>Classes</h1>
+    <p class="standfirst">Primary and secondary classes sit in one list, separated by phase.</p>
+
+    <p>
+        <a class="btn quiet" th:href="@{/academics/classes}">All</a>
+        <a class="btn quiet" th:href="@{/academics/classes(phase='PRIMARY')}">Primary</a>
+        <a class="btn quiet" th:href="@{/academics/classes(phase='SECONDARY')}">Secondary</a>
+        <a class="btn" th:href="@{/academics/classes/new}">New class</a>
+        <a class="btn quiet" th:href="@{/academics/subjects}">Subjects</a>
+        <a class="btn quiet" th:href="@{/academics/classrooms}">Rooms</a>
+    </p>
+
+    <table class="register" th:if="${!#lists.isEmpty(classes)}">
+        <thead><tr><th>Class</th><th>Phase</th><th class="num">Grade</th><th>Stream</th>
+            <th>Class teacher</th><th>Home room</th><th class="num">Capacity</th></tr></thead>
+        <tbody>
+        <tr th:each="c : ${classes}">
+            <td><a th:href="@{/academics/classes/{id}(id=${c.id})}" th:text="${c.name}"></a></td>
+            <td><span class="tag neutral" th:text="${c.phase}"></span></td>
+            <td class="num" th:text="${c.gradeLevel}"></td>
+            <td th:text="${c.stream} ?: '—'"></td>
+            <td th:text="${c.classTeacher != null} ? ${c.classTeacher.fullName} : '—'"></td>
+            <td class="code" th:text="${c.homeClassroom != null} ? ${c.homeClassroom.code} : '—'"></td>
+            <td class="num" th:text="${c.maxCapacity}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(classes)}">
+        No classes yet. Set a current academic year under Setup, then create classes here.
+    </div>
+</main>
+</body>
+</html>

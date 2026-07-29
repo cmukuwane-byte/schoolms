@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle} + ' — School Management'">School Management</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<div th:fragment="chrome(active)">
+    <header class="masthead">
+        <span class="crest">School Management System</span>
+        <span class="spacer"></span>
+        <span class="who" sec:authentication="principal.displayName">Signed in</span>
+        <a th:href="@{/account/password}" style="font-size:.82rem">Password</a>
+        <form th:action="@{/logout}" method="post" style="display:inline">
+            <button class="btn small quiet" type="submit">Sign out</button>
+        </form>
+    </header>
+
+    <nav class="nav">
+        <a th:href="@{/dashboard}"  th:classappend="${active=='home'} ? 'on'">Dashboard</a>
+        <a th:href="@{/students}"   th:classappend="${active=='students'} ? 'on'">Learners</a>
+        <a th:href="@{/staff}"      th:classappend="${active=='staff'} ? 'on'"
+           sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_HEAD')">Staff</a>
+        <a th:href="@{/academics/classes}" th:classappend="${active=='academics'} ? 'on'">Classes</a>
+        <a th:href="@{/curriculum}" th:classappend="${active=='curriculum'} ? 'on'">Curriculum</a>
+        <a th:href="@{/lessons}"    th:classappend="${active=='lessons'} ? 'on'">Lesson plans</a>
+        <a th:href="@{/timetable}"  th:classappend="${active=='timetable'} ? 'on'">Timetable</a>
+        <a th:href="@{/attendance}" th:classappend="${active=='attendance'} ? 'on'">Attendance</a>
+        <a th:href="@{/assessments}" th:classappend="${active=='assessment'} ? 'on'">Tests &amp; exams</a>
+        <a th:href="@{/reports}"    th:classappend="${active=='reports'} ? 'on'">Report cards</a>
+        <a th:href="@{/library}"    th:classappend="${active=='library'} ? 'on'">Library</a>
+        <a th:href="@{/boarding}"   th:classappend="${active=='boarding'} ? 'on'"
+           sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_HEAD','ROLE_MATRON')">Boarding</a>
+        <a th:href="@{/academics/years}" th:classappend="${active=='setup'} ? 'on'"
+           sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_HEAD')">Setup</a>
+    </nav>
+</div>
+
+<div th:fragment="flash">
+    <div class="notice good" th:if="${message}" th:text="${message}"></div>
+    <div class="notice bad"  th:if="${error}"   th:text="${error}"></div>
+</div>
+
+</body>
+</html>

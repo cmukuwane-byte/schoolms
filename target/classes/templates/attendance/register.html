@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Class register')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('attendance')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow" th:text="${session} + ' · ' + ${#temporals.format(date, 'EEEE d MMMM yyyy')}"></p>
+    <h1 th:text="${schoolClass.name} + ' register'">Register</h1>
+    <p class="standfirst">Everyone starts marked present. Change only the exceptions, then save.
+       Marking someone absent clears their arrival time.</p>
+
+    <form th:action="@{/attendance/register}" method="post">
+        <input type="hidden" name="classId" th:value="${schoolClass.id}">
+        <input type="hidden" name="date" th:value="${date}">
+        <input type="hidden" name="session" th:value="${session}">
+
+        <table class="register">
+            <thead><tr><th class="num">#</th><th>Adm. no.</th><th>Name</th>
+                <th>Status</th><th>Arrived</th><th>Remarks</th></tr></thead>
+            <tbody>
+            <tr th:each="row, i : ${rows}">
+                <td class="num" th:text="${i.count}"></td>
+                <td class="code" th:text="${row.student.studentNumber}"></td>
+                <td th:text="${row.student.fullNameFormal}"></td>
+                <td>
+                    <input type="hidden" name="studentId" th:value="${row.student.id}">
+                    <select name="status">
+                        <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                                th:selected="${s == row.status}"></option>
+                    </select>
+                </td>
+                <td><input type="time" name="arrival" style="width:7rem"
+                           th:value="${row.arrivalTime != null} ? ${#temporals.format(row.arrivalTime,'HH:mm')} : ''"></td>
+                <td><input type="text" name="remark" th:value="${row.remarks}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <p style="margin-top:1rem">
+            <button class="btn" type="submit">Save register</button>
+            <a class="btn quiet" th:href="@{/attendance}">Back</a>
+        </p>
+    </form>
+</main>
+</body>
+</html>

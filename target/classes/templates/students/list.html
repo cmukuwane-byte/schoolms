@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{layout/base :: head('Learners')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('students')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+
+    <p class="eyebrow">Learner records</p>
+    <h1>Learners</h1>
+    <p class="standfirst"><span th:text="${#lists.size(students)}">0</span> record(s) shown.</p>
+
+    <form class="inline" method="get" th:action="@{/students}" style="margin-bottom:1rem">
+        <div class="field" style="min-width:14rem">
+            <label for="q">Name or admission number</label>
+            <input type="text" id="q" name="q" th:value="${q}">
+        </div>
+        <div class="field">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                        th:selected="${s == status}"></option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="classId">Class</label>
+            <select id="classId" name="classId">
+                <option value="">All classes</option>
+                <option th:each="c : ${classes}" th:value="${c.id}" th:text="${c.name}"
+                        th:selected="${c.id == classId}"></option>
+            </select>
+        </div>
+        <button class="btn" type="submit">Search</button>
+        <a class="btn quiet" th:href="@{/students/new}"
+           sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_HEAD')">Enrol a learner</a>
+    </form>
+
+    <table class="register" th:if="${!#lists.isEmpty(students)}">
+        <thead>
+        <tr><th>Adm. no.</th><th>Name</th><th>Class</th><th class="num">Age</th>
+            <th>Sex</th><th>Residency</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="s : ${students}">
+            <td class="code" th:text="${s.studentNumber}"></td>
+            <td><a th:href="@{/students/{id}(id=${s.id})}" th:text="${s.fullNameFormal}"></a></td>
+            <td th:text="${s.currentClass != null} ? ${s.currentClass.name} : '—'"></td>
+            <td class="num" th:text="${s.age}"></td>
+            <td th:text="${s.gender}"></td>
+            <td><span class="tag neutral" th:text="${s.residency}"></span></td>
+            <td><span class="tag"
+                      th:classappend="${s.status.name() == 'ENROLLED'} ? 'ok' :
+                                      (${s.status.name() == 'SUSPENDED'} ? 'warn' : 'bad')"
+                      th:text="${s.status}"></span></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(students)}">No learners match that search.</div>
+</main>
+</body>
+</html>

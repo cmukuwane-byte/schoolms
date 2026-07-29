@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Circulation')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('library')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow">Issue desk</p>
+    <h1>Circulation</h1>
+    <p class="standfirst">Scan or type the accession number. Limits and overdue holds are enforced
+       on issue.</p>
+
+    <div class="grid two">
+        <div class="panel">
+            <h3>Issue a book</h3>
+            <form method="post" th:action="@{/library/issue}">
+                <div class="field"><label>Accession or barcode</label>
+                    <input type="text" name="accession" required autofocus></div>
+                <div class="field"><label>Borrower type</label>
+                    <select name="borrowerType" id="btype" onchange="loadBorrowers()">
+                        <option value="STUDENT">Learner</option>
+                        <option value="STAFF">Staff</option>
+                    </select></div>
+                <div class="field"><label>Find borrower</label>
+                    <input type="text" id="bsearch" placeholder="Type a name, then pick below"
+                           onkeyup="loadBorrowers()"></div>
+                <div class="field"><label>Borrower</label>
+                    <select name="borrowerId" id="borrowerId" required></select></div>
+                <button class="btn" type="submit">Issue</button>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h3>Take a book back</h3>
+            <form method="post" th:action="@{/library/return}">
+                <div class="field"><label>Accession or barcode</label>
+                    <input type="text" name="accession" required></div>
+                <div class="field"><label>Condition on return</label>
+                    <select name="condition">
+                        <option value="">Unchanged</option>
+                        <option>GOOD</option><option>FAIR</option><option>POOR</option>
+                    </select></div>
+                <button class="btn" type="submit">Take back</button>
+            </form>
+        </div>
+    </div>
+
+    <h2>Out on loan</h2>
+    <table class="register" th:if="${!#lists.isEmpty(onLoan)}">
+        <thead><tr><th>Accession</th><th>Title</th><th>Borrower</th><th>Issued</th>
+            <th>Due</th><th></th></tr></thead>
+        <tbody>
+        <tr th:each="l : ${onLoan}">
+            <td class="code" th:text="${l.bookCopy.accessionNumber}"></td>
+            <td th:text="${l.bookCopy.book.title}"></td>
+            <td th:text="${l.borrowerName}"></td>
+            <td class="code" th:text="${l.issueDate}"></td>
+            <td class="code" th:text="${l.dueDate}"></td>
+            <td>
+                <form method="post" th:action="@{/library/loans/{id}/renew(id=${l.id})}" style="display:inline">
+                    <button class="btn small quiet" type="submit">Renew</button></form>
+                <form method="post" th:action="@{/library/loans/{id}/lost(id=${l.id})}" style="display:inline">
+                    <button class="btn small quiet" type="submit">Lost</button></form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(onLoan)}">Nothing out on loan.</div>
+
+    <script>
+        function loadBorrowers() {
+            var q = document.getElementById('bsearch').value;
+            if (q.length < 2) return;
+            var type = document.getElementById('btype').value;
+            fetch('/library/borrowers?type=' + type + '&q=' + encodeURIComponent(q))
+                .then(function (r) { return r.json(); })
+                .then(function (rows) {
+                    var sel = document.getElementById('borrowerId');
+                    sel.innerHTML = '';
+                    rows.forEach(function (row) {
+                        var o = document.createElement('option');
+                        o.value = row[0]; o.textContent = row[1];
+                        sel.appendChild(o);
+                    });
+                });
+        }
+    </script>
+</main>
+</body>
+</html>

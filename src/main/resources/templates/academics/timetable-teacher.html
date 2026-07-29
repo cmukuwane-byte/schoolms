@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Teacher timetable')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('timetable')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow" th:text="${term.name} + ' ' + ${term.academicYear.year}"></p>
+    <h1 th:text="${teacher.fullName}">Teacher</h1>
+    <p class="standfirst">Free periods are the blank cells.</p>
+
+    <table class="grid-tt">
+        <thead>
+        <tr>
+            <th style="width:7rem">Period</th>
+            <th th:each="d : ${days}" th:text="${#strings.substring(d, 0, 3)}"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${periods}">
+            <th style="text-align:left">
+                <span th:text="${p.label}"></span><br>
+                <span style="font-weight:400;text-transform:none"
+                      th:text="${p.startTime} + '–' + ${p.endTime}"></span>
+            </th>
+            <td th:each="d : ${days}" th:classappend="${!p.teachingPeriod} ? 'break'">
+                <div class="lesson" th:with="slot=${grid[d][p.id]}" th:if="${slot != null}">
+                    <span class="subj" th:text="${slot.subject.code}"></span>
+                    <span class="meta" th:text="${slot.schoolClass.name}"></span><br>
+                    <span class="meta" th:text="${slot.classroom != null} ? ${slot.classroom.code} : ''"></span>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

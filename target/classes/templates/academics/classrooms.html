@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Rooms')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('academics')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow">Estate</p>
+    <h1>Classrooms and specialist rooms</h1>
+    <p class="standfirst">The timetable checks these for double bookings.</p>
+
+    <div class="panel" style="margin-bottom:1rem">
+        <h3>Add a room</h3>
+        <form class="inline" th:action="@{/academics/classrooms}" th:object="${classroom}" method="post">
+            <div class="field"><label>Code</label><input type="text" th:field="*{code}" required
+                style="width:7rem"></div>
+            <div class="field"><label>Name</label><input type="text" th:field="*{name}" required></div>
+            <div class="field"><label>Block</label><input type="text" th:field="*{block}" style="width:8rem"></div>
+            <div class="field"><label>Type</label>
+                <select th:field="*{roomType}">
+                    <option value="CLASSROOM">Classroom</option>
+                    <option value="LABORATORY">Laboratory</option>
+                    <option value="WORKSHOP">Workshop</option>
+                    <option value="COMPUTER_LAB">Computer laboratory</option>
+                    <option value="HALL">Hall</option>
+                    <option value="LIBRARY">Library</option>
+                </select></div>
+            <div class="field"><label>Seats</label>
+                <input type="number" th:field="*{capacity}" style="width:5rem"></div>
+            <button class="btn" type="submit">Save</button>
+        </form>
+    </div>
+
+    <table class="register" th:if="${!#lists.isEmpty(classrooms)}">
+        <thead><tr><th>Code</th><th>Name</th><th>Block</th><th>Type</th><th class="num">Seats</th></tr></thead>
+        <tbody>
+        <tr th:each="r : ${classrooms}">
+            <td class="code" th:text="${r.code}"></td>
+            <td th:text="${r.name}"></td>
+            <td th:text="${r.block} ?: '—'"></td>
+            <td><span class="tag neutral" th:text="${r.roomType}"></span></td>
+            <td class="num" th:text="${r.capacity}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(classrooms)}">No rooms recorded.</div>
+</main>
+</body>
+</html>

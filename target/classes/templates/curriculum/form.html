@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Scheme of work')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('curriculum')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow">Scheme of work</p>
+    <h1 th:text="${topic.id} == null ? 'Add a week' : 'Edit week'">Week</h1>
+    <p class="standfirst">One row per teaching week. Keep objectives in the language the syllabus
+       uses, so lesson plans and inspection reports line up.</p>
+
+    <form th:action="@{/curriculum}" th:object="${topic}" method="post" style="max-width:44rem">
+        <input type="hidden" th:field="*{id}">
+
+        <div class="grid two">
+            <div class="field"><label>Subject</label>
+                <select th:field="*{subject}" required>
+                    <option value="">Choose…</option>
+                    <option th:each="s : ${subjects}" th:value="${s.id}"
+                            th:text="${s.name} + ' (' + ${s.phase} + ')'"></option>
+                </select></div>
+            <div class="field"><label>Grade or form</label>
+                <input type="number" th:field="*{gradeLevel}" min="0" max="7" required></div>
+        </div>
+
+        <div class="grid two">
+            <div class="field"><label>Term</label>
+                <select th:field="*{termNumber}">
+                    <option value="1">Term 1</option><option value="2">Term 2</option>
+                    <option value="3">Term 3</option>
+                </select></div>
+            <div class="field"><label>Week</label>
+                <input type="number" th:field="*{weekNumber}" min="1" max="15" required></div>
+        </div>
+
+        <div class="field"><label>Topic</label>
+            <input type="text" th:field="*{topic}" required></div>
+        <div class="field"><label>Sub-topic</label>
+            <input type="text" th:field="*{subTopic}"></div>
+
+        <div class="field"><label>Objectives — what the learner should be able to do</label>
+            <textarea th:field="*{objectives}" rows="4"></textarea></div>
+        <div class="field"><label>Competencies</label>
+            <textarea th:field="*{competencies}" rows="2"></textarea></div>
+        <div class="field"><label>Suggested activities</label>
+            <textarea th:field="*{suggestedActivities}" rows="3"></textarea></div>
+        <div class="field"><label>Resources</label>
+            <textarea th:field="*{resources}" rows="2"></textarea></div>
+
+        <div class="grid two">
+            <div class="field"><label>Suggested periods</label>
+                <input type="number" th:field="*{suggestedPeriods}" min="1" max="20"></div>
+            <div class="field"><label>Syllabus reference</label>
+                <input type="text" th:field="*{syllabusReference}" placeholder="e.g. 4.2.1"></div>
+        </div>
+
+        <button class="btn" type="submit">Save</button>
+        <a class="btn quiet" th:href="@{/curriculum}">Cancel</a>
+    </form>
+</main>
+</body>
+</html>

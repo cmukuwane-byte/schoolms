@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{layout/base :: head('Class timetable')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('timetable')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow" th:text="${term.name} + ' ' + ${term.academicYear.year}"></p>
+    <h1 th:text="${schoolClass.name} + ' timetable'">Timetable</h1>
+    <p class="standfirst">Placing a lesson checks three things: the class, the teacher and the room
+       must all be free.</p>
+
+    <div class="notice bad" th:if="${!#lists.isEmpty(audit)}">
+        <strong>Not yet complete.</strong>
+        <span th:each="a, i : ${audit}" th:text="${a} + (${i.last} ? '' : ' · ')"></span>
+    </div>
+
+    <table class="grid-tt">
+        <thead>
+        <tr>
+            <th style="width:7rem">Period</th>
+            <th th:each="d : ${days}" th:text="${#strings.substring(d, 0, 3)}"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${periods}">
+            <th style="text-align:left">
+                <span th:text="${p.label}"></span><br>
+                <span style="font-weight:400;text-transform:none"
+                      th:text="${p.startTime} + '–' + ${p.endTime}"></span>
+            </th>
+            <td th:each="d : ${days}" th:classappend="${!p.teachingPeriod} ? 'break'">
+                <div th:with="slot=${grid[d][p.id]}">
+                    <div class="lesson" th:if="${slot != null}">
+                        <span class="subj" th:text="${slot.subject.code}"></span>
+                        <span class="meta" th:text="${slot.teacher.shortName}"></span><br>
+                        <span class="meta" th:text="${slot.classroom != null} ? ${slot.classroom.code} : ''"></span>
+                        <form th:action="@{/timetable/slot/{id}/remove(id=${slot.id})}" method="post"
+                              class="no-print" sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_HEAD')">
+                            <input type="hidden" name="classId" th:value="${schoolClass.id}">
+                            <button class="btn small quiet" type="submit" style="padding:0 .3rem">×</button>
+                        </form>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="panel no-print" style="margin-top:1.5rem"
+         sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_HEAD')">
+        <h3>Place a lesson</h3>
+        <form class="inline" method="post" th:action="@{/timetable/slot}">
+            <input type="hidden" name="classId" th:value="${schoolClass.id}">
+            <div class="field"><label>Subject and teacher</label>
+                <select name="subjectId" required onchange="syncTeacher(this)">
+                    <option th:each="a : ${allocations}" th:value="${a.subject.id}"
+                            th:attr="data-teacher=${a.teacher.id}"
+                            th:text="${a.subject.name} + ' — ' + ${a.teacher.shortName}"></option>
+                </select></div>
+            <input type="hidden" name="teacherId" id="teacherId"
+                   th:value="${!#lists.isEmpty(allocations)} ? ${allocations[0].teacher.id} : ''">
+            <div class="field"><label>Day</label>
+                <select name="day" required>
+                    <option th:each="d : ${days}" th:value="${d}" th:text="${d}"></option>
+                </select></div>
+            <div class="field"><label>Period</label>
+                <select name="periodId" required>
+                    <option th:each="p : ${periods}" th:if="${p.teachingPeriod}"
+                            th:value="${p.id}" th:text="${p.label}"></option>
+                </select></div>
+            <div class="field"><label>Room</label>
+                <select name="roomId">
+                    <option value="">Home room</option>
+                    <option th:each="r : ${classrooms}" th:value="${r.id}" th:text="${r.code}"></option>
+                </select></div>
+            <button class="btn" type="submit">Place</button>
+        </form>
+    </div>
+
+    <script>
+        function syncTeacher(sel) {
+            var opt = sel.options[sel.selectedIndex];
+            document.getElementById('teacherId').value = opt.getAttribute('data-teacher');
+        }
+    </script>
+</main>
+</body>
+</html>
