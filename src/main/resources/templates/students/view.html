@@ -32,15 +32,101 @@
             <p><strong>Medical</strong> <span th:text="${student.medicalNotes} ?: 'Nothing recorded'"></span></p>
         </div>
         <div class="panel">
-            <h3>Guardians</h3>
+            <h3>Parents and guardians</h3>
             <div th:if="${#lists.isEmpty(guardians)}" style="color:var(--ink-soft)">
                 No guardian is linked to this learner yet.</div>
-            <p th:each="g : ${guardians}">
-                <strong th:text="${g.guardian.fullName}"></strong>
-                <span class="tag neutral" th:text="${g.relationship}"></span>
-                <span th:if="${g.primaryContact}" class="tag ok">First call</span><br>
-                <span class="code" th:text="${g.guardian.primaryPhone}"></span>
-            </p>
+
+            <table class="register" th:if="${!#lists.isEmpty(guardians)}">
+                <thead><tr><th>Name</th><th>Relationship</th><th>Phone</th><th>Email</th>
+                    <th>Role</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="g : ${guardians}">
+                    <td th:text="${g.guardian.fullName}"></td>
+                    <td th:text="${g.relationship}"></td>
+                    <td class="code">
+                        <span th:text="${g.guardian.primaryPhone}"></span>
+                        <span th:if="${g.guardian.alternatePhone != null}"
+                              th:text="' / ' + ${g.guardian.alternatePhone}"></span>
+                    </td>
+                    <td th:text="${g.guardian.email} ?: '—'"></td>
+                    <td>
+                        <span class="tag ok" th:if="${g.primaryContact}">First call</span>
+                        <span class="tag neutral" th:if="${g.feePayer}">Fees</span>
+                        <span class="tag neutral" th:if="${g.mayCollect}">May collect</span>
+                    </td>
+                    <td><form method="post"
+                              th:action="@{/students/{id}/guardians/{lid}/remove(id=${student.id},lid=${g.id})}">
+                        <button class="btn small quiet" type="submit">Unlink</button></form></td>
+                </tr>
+                </tbody>
+            </table>
+
+            <details style="margin-top:.75rem">
+                <summary style="cursor:pointer;font-weight:600">Add a parent or guardian</summary>
+
+                <form method="post" th:action="@{/students/{id}/guardians(id=${student.id})}"
+                      style="margin-top:.75rem">
+                    <p style="font-size:.85rem;color:var(--ink-soft);margin:0 0 .75rem">
+                        Pick someone already on record — a sibling's parent, for instance — or leave
+                        that blank and type the details below to create a new record.</p>
+
+                    <div class="field"><label>Already on record</label>
+                        <select name="guardianId">
+                            <option value="">Not listed — create a new record</option>
+                            <option th:each="gd : ${allGuardians}" th:value="${gd.id}"
+                                    th:text="${gd.fullName} + ' — ' + ${gd.primaryPhone}"></option>
+                        </select></div>
+
+                    <div class="grid two">
+                        <div class="field"><label>First name</label>
+                            <input type="text" name="firstName"></div>
+                        <div class="field"><label>Surname</label>
+                            <input type="text" name="surname"></div>
+                    </div>
+                    <div class="grid two">
+                        <div class="field"><label>Phone</label>
+                            <input type="text" name="primaryPhone" placeholder="+263 77 000 0000"></div>
+                        <div class="field"><label>Alternate phone</label>
+                            <input type="text" name="alternatePhone"></div>
+                    </div>
+                    <div class="grid two">
+                        <div class="field"><label>Email</label>
+                            <input type="email" name="email"></div>
+                        <div class="field"><label>National ID</label>
+                            <input type="text" name="nationalId"></div>
+                    </div>
+                    <div class="grid two">
+                        <div class="field"><label>Occupation</label>
+                            <input type="text" name="occupation"></div>
+                        <div class="field"><label>Relationship to learner</label>
+                            <select name="relationship" required>
+                                <option value="Mother">Mother</option>
+                                <option value="Father">Father</option>
+                                <option value="Guardian">Guardian</option>
+                                <option value="Grandmother">Grandmother</option>
+                                <option value="Grandfather">Grandfather</option>
+                                <option value="Aunt">Aunt</option>
+                                <option value="Uncle">Uncle</option>
+                                <option value="Sibling">Sibling</option>
+                                <option value="Other">Other</option>
+                            </select></div>
+                    </div>
+                    <div class="field"><label>Home address</label>
+                        <input type="text" name="residentialAddress"></div>
+
+                    <div class="field">
+                        <label><input type="checkbox" name="primaryContact" value="true">
+                            First person to call</label>
+                        <label><input type="checkbox" name="feePayer" value="true">
+                            Pays the fees</label>
+                        <label><input type="checkbox" name="mayCollect" value="true" checked>
+                            May collect the learner</label>
+                    </div>
+
+                    <button class="btn" type="submit">Add guardian</button>
+                </form>
+            </details>
+
         </div>
     </div>
 

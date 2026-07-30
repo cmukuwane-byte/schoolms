@@ -23,7 +23,7 @@
 
     <table class="register" th:if="${!#lists.isEmpty(staffList)}">
         <thead><tr><th>Staff no.</th><th>Name</th><th>Category</th><th>Department</th>
-            <th>Phase</th><th>Phone</th></tr></thead>
+            <th>Phase</th><th>Phone</th><th></th></tr></thead>
         <tbody>
         <tr th:each="s : ${staffList}">
             <td class="code" th:text="${s.staffNumber}"></td>
@@ -32,6 +32,7 @@
             <td th:text="${s.department != null} ? ${s.department.name} : '—'"></td>
             <td th:text="${s.phase} ?: 'Both'"></td>
             <td class="code" th:text="${s.mobilePhone}"></td>
+            <td><a class="btn small quiet" th:href="@{/staff/{id}/edit(id=${s.id})}">Edit</a></td>
         </tr>
         </tbody>
     </table>

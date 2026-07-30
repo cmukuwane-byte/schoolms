@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Departments')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('academics')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow">Academics</p>
+    <h1>Departments</h1>
+    <p class="standfirst">Group subjects and staff for reporting and for allocating a head of
+       department. A member of staff belongs to one department.</p>
+
+    <div class="panel" style="margin-bottom:1rem">
+        <h3 th:text="${department.id} == null ? 'Add a department' : 'Edit department'">Add</h3>
+        <form class="inline" method="post" th:action="@{/academics/departments}" th:object="${department}">
+            <input type="hidden" th:field="*{id}">
+            <div class="field"><label>Name</label>
+                <input type="text" th:field="*{name}" required
+                       placeholder="Mathematics and Science"></div>
+            <div class="field"><label>Head of department</label>
+                <select th:field="*{headOfDepartment}">
+                    <option value="">Not assigned</option>
+                    <option th:each="s : ${staffList}" th:value="${s.id}" th:text="${s.fullName}"></option>
+                </select></div>
+            <button class="btn" type="submit">Save</button>
+            <a class="btn quiet" th:href="@{/academics/departments}"
+               th:if="${department.id != null}">New</a>
+        </form>
+    </div>
+
+    <table class="register" th:if="${!#lists.isEmpty(departments)}">
+        <thead><tr><th>Department</th><th>Head of department</th><th></th></tr></thead>
+        <tbody>
+        <tr th:each="d : ${departments}">
+            <td th:text="${d.name}"></td>
+            <td th:text="${d.headOfDepartment != null} ? ${d.headOfDepartment.fullName} : '—'"></td>
+            <td><a class="btn small quiet"
+                   th:href="@{/academics/departments/{id}/edit(id=${d.id})}">Edit</a></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(departments)}">
+        No departments yet. Add one above, then pick it on each staff record.</div>
+</main>
+</body>
+</html>

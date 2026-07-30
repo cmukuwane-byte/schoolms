@@ -41,4 +41,6 @@ public interface TimetableSlotRepository extends JpaRepository<TimetableSlot, Lo
     List<TimetableSlot> findDayGrid(@Param("termId") Long termId, @Param("day") DayOfWeekSlot day);
 
     void deleteByTermIdAndSchoolClassId(Long termId, Long classId);
+
+    long countByBellPeriodId(Long bellPeriodId);
 }

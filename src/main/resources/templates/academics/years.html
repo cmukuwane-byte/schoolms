@@ -6,6 +6,12 @@
 <main class="sheet">
     <div th:replace="~{layout/base :: flash}"></div>
     <p class="eyebrow">Setup</p>
+    <p style="margin-bottom:1rem">
+        <a class="btn quiet" th:href="@{/academics/departments}">Departments</a>
+        <a class="btn quiet" th:href="@{/academics/bells}">Bell schedule</a>
+        <a class="btn quiet" th:href="@{/academics/subjects}">Subjects</a>
+        <a class="btn quiet" th:href="@{/academics/classrooms}">Rooms</a>
+    </p>
     <h1>Years, terms and the bell schedule</h1>
     <p class="standfirst">Most screens read the current term. Set it here before term starts.</p>
 

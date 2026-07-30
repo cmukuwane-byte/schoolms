@@ -10,4 +10,5 @@ import java.util.*;
 
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
     Optional<Department> findByName(String name);
+    List<Department> findAllByOrderByNameAsc();
 }

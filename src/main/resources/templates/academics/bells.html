@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Bell schedule')}"></head>
+<body>
+<div th:replace="~{layout/base :: chrome('academics')}"></div>
+<main class="sheet">
+    <div th:replace="~{layout/base :: flash}"></div>
+    <p class="eyebrow">Academics</p>
+    <h1>Bell schedule</h1>
+    <p class="standfirst">The columns of the timetable grid come from here, so change this before
+       placing lessons. Assembly, break and lunch are listed as periods but marked
+       non-teaching, which is what makes them appear hatched on the timetable.</p>
+
+    <form class="inline" method="get" th:action="@{/academics/bells}" style="margin-bottom:1rem">
+        <div class="field"><label>Phase</label>
+            <select name="phase" onchange="this.form.submit()">
+                <option th:each="p : ${phases}" th:value="${p}" th:text="${p}"
+                        th:selected="${p == phase}"></option>
+            </select></div>
+    </form>
+
+    <table class="register" th:if="${!#lists.isEmpty(periods)}">
+        <thead><tr><th class="num">No.</th><th>Label</th><th>From</th><th>To</th>
+            <th>Teaching</th><th></th></tr></thead>
+        <tbody>
+        <tr th:each="bp : ${periods}">
+            <td class="num" th:text="${bp.periodNumber}"></td>
+            <td th:text="${bp.label}"></td>
+            <td class="code" th:text="${#temporals.format(bp.startTime, 'HH:mm')}"></td>
+            <td class="code" th:text="${#temporals.format(bp.endTime, 'HH:mm')}"></td>
+            <td><span class="tag" th:classappend="${bp.teachingPeriod} ? 'ok' : 'neutral'"
+                      th:text="${bp.teachingPeriod} ? 'Lesson' : 'Break'"></span></td>
+            <td>
+                <a class="btn small quiet" th:href="@{/academics/bells/{id}/edit(id=${bp.id})}">Edit</a>
+                <form method="post" style="display:inline"
+                      th:action="@{/academics/bells/{id}/remove(id=${bp.id})}">
+                    <button class="btn small quiet" type="submit">Remove</button></form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(periods)}">
+        No periods for this phase yet.</div>
+
+    <div class="panel" style="margin-top:1rem">
+        <h3 th:text="${period.id} == null ? 'Add a period' : 'Edit period'">Add a period</h3>
+        <form class="inline" method="post" th:action="@{/academics/bells}" th:object="${period}">
+            <input type="hidden" th:field="*{id}">
+            <div class="field"><label>Phase</label>
+                <select th:field="*{phase}">
+                    <option th:each="p : ${phases}" th:value="${p}" th:text="${p}"></option>
+                </select></div>
+            <div class="field"><label>Number</label>
+                <input type="number" th:field="*{periodNumber}" min="1" max="20"
+                       style="width:5rem" required></div>
+            <div class="field"><label>Label</label>
+                <input type="text" th:field="*{label}" required placeholder="Period 1"></div>
+            <div class="field"><label>From</label>
+                <input type="time" th:field="*{startTime}" required style="width:7rem"></div>
+            <div class="field"><label>To</label>
+                <input type="time" th:field="*{endTime}" required style="width:7rem"></div>
+            <div class="field"><label>Teaching period</label>
+                <select th:field="*{teachingPeriod}">
+                    <option value="true">Lesson</option>
+                    <option value="false">Break or assembly</option>
+                </select></div>
+            <button class="btn" type="submit">Save</button>
+            <a class="btn quiet" th:if="${period.id != null}"
+               th:href="@{/academics/bells(phase=${phase})}">New</a>
+        </form>
+    </div>
+</main>
+</body>
+</html>

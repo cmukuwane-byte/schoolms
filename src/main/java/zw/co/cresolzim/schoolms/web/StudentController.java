@@ -10,6 +10,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import zw.co.cresolzim.schoolms.domain.*;
 import zw.co.cresolzim.schoolms.domain.Enums.*;
 import zw.co.cresolzim.schoolms.repo.*;
+import zw.co.cresolzim.schoolms.service.NotFoundException;
+import zw.co.cresolzim.schoolms.service.RuleViolationException;
 import zw.co.cresolzim.schoolms.service.StudentService;
 
 import java.util.List;
@@ -82,6 +84,8 @@ public class StudentController {
         Student s = service.require(id);
         model.addAttribute("student", s);
         model.addAttribute("guardians", links.findByStudentId(id));
+        model.addAttribute("allGuardians", guardians.findAll(
+                org.springframework.data.domain.Sort.by("surname", "firstName")));
         model.addAttribute("enrolments", enrolments.findByStudentIdOrderByAcademicYearYearDesc(id));
         model.addAttribute("transfers", transfers.findByStudentIdOrderByEffectiveDateDesc(id));
         model.addAttribute("cases", cases.findByStudentIdOrderByIncidentDateDesc(id));
@@ -162,22 +166,104 @@ public class StudentController {
 
     /* ---------------------------------------------------------- guardians */
 
+    /**
+     * Adds a guardian to a learner in one step: either linking an existing
+     * guardian record, or creating a new one from the name and contact details
+     * typed in. Matching on national ID or phone number first stops the same
+     * parent being entered once per child.
+     */
     @PostMapping("/{id}/guardians")
-    public String linkGuardian(@PathVariable Long id, @RequestParam Long guardianId,
-                               @RequestParam String relationship,
-                               @RequestParam(defaultValue = "false") boolean primaryContact,
-                               @RequestParam(defaultValue = "false") boolean feePayer,
-                               RedirectAttributes flash) {
+    public String addGuardian(@PathVariable Long id,
+                              @RequestParam(required = false) Long guardianId,
+                              @RequestParam(required = false) String firstName,
+                              @RequestParam(required = false) String surname,
+                              @RequestParam(required = false) String primaryPhone,
+                              @RequestParam(required = false) String alternatePhone,
+                              @RequestParam(required = false) String email,
+                              @RequestParam(required = false) String nationalId,
+                              @RequestParam(required = false) String occupation,
+                              @RequestParam(required = false) String residentialAddress,
+                              @RequestParam String relationship,
+                              @RequestParam(defaultValue = "false") boolean primaryContact,
+                              @RequestParam(defaultValue = "false") boolean feePayer,
+                              @RequestParam(defaultValue = "true") boolean mayCollect,
+                              RedirectAttributes flash) {
+
+        Student student = service.require(id);
+        Guardian guardian;
+
+        if (guardianId != null) {
+            guardian = guardians.findById(guardianId)
+                    .orElseThrow(() -> new NotFoundException("Guardian", guardianId));
+        } else {
+            if (isBlank(firstName) || isBlank(surname) || isBlank(primaryPhone)) {
+                throw new RuleViolationException(
+                        "A new guardian needs at least a first name, surname and phone number.");
+            }
+
+            // Reuse an existing record where we can recognise the same person.
+            guardian = null;
+            if (!isBlank(nationalId)) {
+                guardian = guardians.findByNationalId(nationalId.trim()).orElse(null);
+            }
+            if (guardian == null) {
+                guardian = guardians.findByPrimaryPhone(primaryPhone.trim()).orElse(null);
+            }
+            if (guardian == null) {
+                guardian = new Guardian();
+                guardian.setCreatedBy(CurrentUser.name());
+            }
+
+            guardian.setFirstName(firstName.trim());
+            guardian.setSurname(surname.trim());
+            guardian.setPrimaryPhone(primaryPhone.trim());
+            guardian.setAlternatePhone(blankToNull(alternatePhone));
+            guardian.setEmail(blankToNull(email));
+            guardian.setNationalId(blankToNull(nationalId));
+            guardian.setOccupation(blankToNull(occupation));
+            guardian.setResidentialAddress(blankToNull(residentialAddress));
+            guardian = guardians.save(guardian);
+        }
+
+        final Long gid = guardian.getId();
+        if (links.findByStudentId(id).stream()
+                .anyMatch(l -> l.getGuardian().getId().equals(gid))) {
+            throw new RuleViolationException(
+                    guardian.getFullName() + " is already linked to " + student.getFullName() + ".");
+        }
+
+        // Only one primary contact per learner, or nobody knows who to ring.
+        if (primaryContact) {
+            links.findByStudentId(id).stream()
+                 .filter(StudentGuardian::isPrimaryContact)
+                 .forEach(l -> { l.setPrimaryContact(false); links.save(l); });
+        }
+
         StudentGuardian sg = new StudentGuardian();
-        sg.setStudent(service.require(id));
-        sg.setGuardian(guardians.findById(guardianId).orElseThrow());
+        sg.setStudent(student);
+        sg.setGuardian(guardian);
         sg.setRelationship(relationship);
         sg.setPrimaryContact(primaryContact);
         sg.setFeePayer(feePayer);
+        sg.setMayCollect(mayCollect);
+        sg.setCreatedBy(CurrentUser.name());
         links.save(sg);
-        flash.addFlashAttribute("message", "Guardian linked.");
+
+        flash.addFlashAttribute("message",
+                guardian.getFullName() + " linked as " + relationship + ".");
         return "redirect:/students/" + id;
     }
+
+    @PostMapping("/{id}/guardians/{linkId}/remove")
+    public String unlinkGuardian(@PathVariable Long id, @PathVariable Long linkId,
+                                 RedirectAttributes flash) {
+        links.findById(linkId).ifPresent(links::delete);
+        flash.addFlashAttribute("message", "Guardian unlinked from this learner.");
+        return "redirect:/students/" + id;
+    }
+
+    private static boolean isBlank(String s) { return s == null || s.isBlank(); }
+    private static String blankToNull(String s) { return isBlank(s) ? null : s.trim(); }
 
     private List<SchoolClass> currentClasses() {
         return years.findByCurrentTrue()

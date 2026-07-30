@@ -20,4 +20,6 @@ public interface GuardianRepository extends JpaRepository<Guardian, Long> {
            order by g.surname
            """)
     List<Guardian> search(@Param("q") String q);
+
+    Optional<Guardian> findByPrimaryPhone(String primaryPhone);
 }

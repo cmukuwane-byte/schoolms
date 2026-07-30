@@ -12,6 +12,7 @@
     <div class="panel" style="margin-bottom:1rem">
         <h3>Add or amend a subject</h3>
         <form class="inline" th:action="@{/academics/subjects}" th:object="${subject}" method="post">
+            <input type="hidden" th:field="*{id}">
             <div class="field"><label>Code</label><input type="text" th:field="*{code}" required
                 style="width:7rem"></div>
             <div class="field"><label>Name</label><input type="text" th:field="*{name}" required></div>
@@ -26,7 +27,7 @@
     </div>
 
     <table class="register" th:if="${!#lists.isEmpty(subjects)}">
-        <thead><tr><th>Code</th><th>Subject</th><th>Phase</th><th>Core</th><th class="num">Order</th></tr></thead>
+        <thead><tr><th>Code</th><th>Subject</th><th>Phase</th><th>Core</th><th class="num">Order</th><th></th></tr></thead>
         <tbody>
         <tr th:each="s : ${subjects}">
             <td class="code" th:text="${s.code}"></td>
@@ -34,6 +35,12 @@
             <td><span class="tag neutral" th:text="${s.phase}"></span></td>
             <td th:text="${s.core} ? 'Yes' : 'No'"></td>
             <td class="num" th:text="${s.displayOrder}"></td>
+            <td>
+                <a class="btn small quiet" th:href="@{/academics/subjects/{id}/edit(id=${s.id})}">Edit</a>
+                <form method="post" style="display:inline"
+                      th:action="@{/academics/subjects/{id}/retire(id=${s.id})}">
+                    <button class="btn small quiet" type="submit">Retire</button></form>
+            </td>
         </tr>
         </tbody>
     </table>
